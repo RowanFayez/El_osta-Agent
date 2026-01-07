@@ -1,0 +1,13 @@
+# Minimal runtime deps for Streamlit + the LangGraph agent
+# (avoids heavy ML packages like torch/transformers which are not imported by this repo)
+streamlit==1.52.2
+pandas==2.3.3
+geopy==2.4.1
+langgraph==1.0.5
+langchain-core==1.2.5
+google-genai==1.56.0
+grpcio==1.76.0
+protobuf==6.33.2
+python-dotenv==1.2.1
+psycopg2-binary==2.9.11
+requests==2.32.5

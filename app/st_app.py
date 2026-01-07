@@ -3,8 +3,12 @@ import pandas as pd
 import sys
 import os
 
-# Add the current directory to path to ensure modules are found
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Ensure both the script directory and repo root are on PYTHONPATH.
+_APP_DIR = os.path.dirname(os.path.abspath(__file__))
+_REPO_ROOT = os.path.dirname(_APP_DIR)
+for p in (_REPO_ROOT, _APP_DIR):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 # Change this line to match your folder structure
 from graph.graph import build_graph
