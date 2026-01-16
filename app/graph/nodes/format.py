@@ -1,6 +1,5 @@
-#format.py
+import time
 
-from app.services.decode_trips import TripDecoder
 from app.services.format_output import format_server_journeys_for_user_llm
 
 
@@ -11,26 +10,35 @@ def format_node(state: dict) -> dict:
     - origin
     - destination
     """
-
-    decoder = TripDecoder()
+    print("[FORMAT] Starting format node")
+    start = time.time()
 
     route_response = state.get("route_response")
     origin = state.get("origin")
     dest = state.get("destination")
 
-    # 1️⃣ فلترة وترتيب
-    best_journeys = decoder.filter_sort(route_response)
+    journeys = (route_response or {}).get("journeys", []) if isinstance(route_response, dict) else []
+    print(f"[FORMAT] Got {len(journeys)} journeys to format")
 
-    # 2️⃣ decoding
-    for j in best_journeys:
-        j["readable_path"] = decoder.decode_path(j.get("path", []))
+    # 1️⃣ فلترة وترتيب (حسب أقل مشي ثم أقل تكلفة ثم أقل وقت)
+    def _rank(j: dict) -> tuple:
+        summary = j.get("summary") or {}
+        return (
+            float(summary.get("walking_distance_meters", 0)),
+            float(summary.get("cost", 0)),
+            float(summary.get("total_time_minutes", 0)),
+        )
 
-    # 3️⃣ formatting (LLM)
+    best_journeys = sorted(journeys, key=_rank)[:5]
+
+    # 2️⃣ formatting (LLM)
     user_text = format_server_journeys_for_user_llm(
         journeys=best_journeys,
         origin=origin,
         dest=dest
     )
+
+    print(f"[FORMAT] Done in {time.time()-start:.1f}s")
 
     # 4️⃣ رجوع النتيجة
     return {
